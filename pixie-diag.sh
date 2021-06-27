@@ -55,7 +55,7 @@ nodes=$(kubectl get nodes | awk '{print $1}' | tail -n +2)
 
 for node_name in $nodes
   do
-    # Get K8s version and Kernel from nodes
+    # Get Kernel version from nodes
     echo ""
     echo "Kernel Version from $node_name"
     kubectl describe node $node_name | grep -i "Kernel Version:"
