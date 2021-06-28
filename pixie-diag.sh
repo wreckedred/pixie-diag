@@ -84,7 +84,7 @@ echo ""
 echo "*****************************************************"
 echo ""
 
-echo "End pixie-diag"
-
 echo "File created = pixie-diag.log"
 echo "File created = pixie_logs_<date>.zip"
+
+echo "End pixie-diag"
