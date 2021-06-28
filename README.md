@@ -12,7 +12,7 @@ chmod +x pixie-diag.sh
 
 ./pixie-diag.sh
 
-# OutPut
+# Output
 
 pixie-diag.sh outputs to terminal and creates two files.
 
