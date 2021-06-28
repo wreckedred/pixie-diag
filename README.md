@@ -12,4 +12,9 @@ chmod +x pixie-diag.sh
 
 ./pixie-diag.sh
 
+# OutPut
 
+pixie-diag.sh outputs to terminal and creates two files.
+
+pixie-diag.log <-- stout to file
+pixie_logs_<date>.zip <-- logs to zip
