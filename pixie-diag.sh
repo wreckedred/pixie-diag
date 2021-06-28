@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Create a log file
-exec > >(tee -a "$PWD/pixie-diag.log") 2>&1
+exec > >(tee -a "$PWD/pixie_diag.log") 2>&1
 
 echo ""
 echo "*****************************************************"
@@ -84,7 +84,7 @@ echo ""
 echo "*****************************************************"
 echo ""
 
-echo "File created = pixie-diag.log"
+echo "File created = pixie_diag.log"
 echo "File created = pixie_logs_<date>.zip"
 
 echo "End pixie-diag"
