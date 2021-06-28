@@ -13,7 +13,10 @@ echo ""
 if ! [ -x "$(command -v px)" ]; then
   echo 'Error: px is not installed.' >&2
   else
+  echo "Get agent status from Pixie"
   px run px/agent_status
+  echo "Collect logs from Pixie"
+  px collect-logs
 fi
 
 echo ""
@@ -55,7 +58,7 @@ nodes=$(kubectl get nodes | awk '{print $1}' | tail -n +2)
 
 for node_name in $nodes
   do
-    # Get Kernel version from nodes
+    # Get K8s version and Kernel from nodes
     echo ""
     echo "Kernel Version from $node_name"
     kubectl describe node $node_name | grep -i "Kernel Version:"
@@ -82,3 +85,6 @@ echo "*****************************************************"
 echo ""
 
 echo "End pixie-diag"
+
+echo "File created = pixie-diag.log"
+echo "File created = pixie_logs_<date>.zip"
