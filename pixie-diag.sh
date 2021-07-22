@@ -27,7 +27,7 @@ echo "*****************************************************"
 echo ""
 
 # Check HELM releases
-helm list -A -n newrelic
+helm list -n newrelic
 
 echo ""
 echo "*****************************************************"
