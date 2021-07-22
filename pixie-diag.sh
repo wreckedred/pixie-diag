@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Create a log file
-exec > >(tee -a "$PWD/pixie_diag.log") 2>&1
+exec > >(tee -a "$PWD/pixie-diag.log") 2>&1
 
 echo ""
 echo "*****************************************************"
@@ -15,19 +15,47 @@ if ! [ -x "$(command -v px)" ]; then
   else
   echo "Get agent status from Pixie"
   px run px/agent_status
+  echo ""
   echo "Collect logs from Pixie"
   px collect-logs
 fi
 
 echo ""
 echo "*****************************************************"
-echo "Check all resources"
+echo "Checking HELM releases"
 echo "*****************************************************"
 echo ""
 
-# Get all api-resources
+# Check HELM releases
+helm list -A -n newrelic
+
+echo ""
+echo "*****************************************************"
+echo "Checking System Info"
+echo "*****************************************************"
+echo ""
+
+# Check System Info
+nodes=$(kubectl get nodes | awk '{print $1}' | tail -n +2)
+
+for node_name in $nodes
+  do
+    # Get K8s version and Kernel from nodes
+    echo ""
+    echo "System Info from $node_name"
+    kubectl describe node $node_name | grep -i 'Kernel Version\|OS Image\|Operating System\|Architecture\|Container Runtime Version\|Kubelet Version'
+    done
+
+echo ""
+echo "*****************************************************"
+echo "Check all Kubernetes resources in namespace"
+echo "*****************************************************"
+echo ""
+
+# Get all api-resources in namespace
 for i in $(kubectl api-resources --verbs=list --namespaced -o name | grep -v "events.events.k8s.io" | grep -v "events" | sort | uniq); 
 do
+echo ""
 echo "Resource:" $i;
 kubectl -n newrelic get --ignore-not-found ${i};
 done
@@ -50,22 +78,6 @@ for deployment_name in $deployments
 
 echo ""
 echo "*****************************************************"
-echo "Checking Kernel Version of nodes"
-echo "*****************************************************"
-echo ""
-
-nodes=$(kubectl get nodes | awk '{print $1}' | tail -n +2)
-
-for node_name in $nodes
-  do
-    # Get K8s version and Kernel from nodes
-    echo ""
-    echo "Kernel Version from $node_name"
-    kubectl describe node $node_name | grep -i "Kernel Version:"
-    done
-
-echo ""
-echo "*****************************************************"
 echo "Checking pod events"
 echo "*****************************************************"
 echo ""
@@ -84,7 +96,7 @@ echo ""
 echo "*****************************************************"
 echo ""
 
-echo "File created = pixie_diag.log"
+echo "File created = pixie-diag.log"
 echo "File created = pixie_logs_<date>.zip"
 
 echo "End pixie-diag"
