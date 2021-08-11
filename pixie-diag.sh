@@ -1,5 +1,16 @@
 #!/bin/bash
 
+# check for namespace
+if [ -z "$1" ]
+  then
+    echo "No namespace passed"
+    echo "usage: pixie-diag.sh <namespace>"
+    exit 0
+fi
+
+# namespace variable
+namespace=$1
+
 # Create a log file
 exec > >(tee -a "$PWD/pixie-diag.log") 2>&1
 
@@ -27,7 +38,7 @@ echo "*****************************************************"
 echo ""
 
 # Check HELM releases
-helm list -n newrelic
+helm list -A -n $namespace
 
 echo ""
 echo "*****************************************************"
@@ -57,7 +68,7 @@ for i in $(kubectl api-resources --verbs=list --namespaced -o name | grep -v "ev
 do
 echo ""
 echo "Resource:" $i;
-kubectl -n newrelic get --ignore-not-found ${i};
+kubectl -n $namespace get --ignore-not-found ${i};
 done
 
 echo ""
@@ -73,7 +84,7 @@ for deployment_name in $deployments
     # Get logs from deployed
     echo ""
     echo "Logs from $deployment_name"
-    kubectl logs --tail=20 deployments/$deployment_name -n newrelic
+    kubectl logs --tail=20 deployments/$deployment_name -n $namespace
     done
 
 echo ""
@@ -82,7 +93,7 @@ echo "Checking pod events"
 echo "*****************************************************"
 echo ""
 
-pods=$(kubectl get pods -n newrelic | awk '{print $1}' | tail -n +2)
+pods=$(kubectl get pods -n $namespace | awk '{print $1}' | tail -n +2)
 
 for pod_name in $pods
   do
