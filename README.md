@@ -16,6 +16,6 @@ chmod +x pixie-diag.sh
 
 pixie-diag.sh outputs to terminal and creates two files.
 
-pixie-diag.log <-- stout to file
+pixie_diag_<date>.log <-- stout to file
 
 pixie_logs_<date>.zip <-- logs to zip
