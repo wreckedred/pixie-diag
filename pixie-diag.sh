@@ -113,7 +113,7 @@ echo "Checking logs"
 echo "*****************************************************"
 echo ""
 
-deployments=$(kubectl get deployments -n newrelic | awk '{print $1}' | tail -n +2)
+deployments=$(kubectl get deployments -n $namespace | awk '{print $1}' | tail -n +2)
 
 for deployment_name in $deployments
   do
