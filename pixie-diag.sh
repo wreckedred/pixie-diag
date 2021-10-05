@@ -100,7 +100,7 @@ echo "*****************************************************"
 echo ""
 
 # Get all api-resources in namespace
-for i in $(kubectl api-resources --verbs=list --namespaced -o name | grep -v "events.events.k8s.io" | grep -v "events" | sort | uniq); 
+for i in $(kubectl api-resources --verbs=list -o name | grep -v "events.events.k8s.io" | grep -v "events" | sort | uniq); 
 do
 echo ""
 echo "Resource:" $i;
@@ -136,7 +136,7 @@ for pod_name in $pods
     # Get events from pods in New Relic namespace
     echo ""
     echo "Events from pod name $pod_name"
-    kubectl get events --all-namespaces  | grep -i $pod_name
+    kubectl get events --all-namespaces --sort-by='.lastTimestamp'  | grep -i $pod_name
     done
 
 echo ""
