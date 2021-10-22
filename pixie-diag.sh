@@ -76,7 +76,29 @@ for node_name in $nodes
     echo ""
     echo "Node Allocated resources info from $node_name"
     kubectl describe node $node_name | grep "Allocated resources" -A 9
-    done
+  done
+
+# Get kubectl describe node output for 3 nodes
+echo ""
+echo "*****************************************************"
+echo "Collecting Node Detail (limited to 3 nodes)"
+echo "*****************************************************"
+echo ""
+
+nodedetailcounter=0
+for node_name in $nodes
+  do
+    if [ $nodedetailcounter -lt 3 ]
+    then
+      # Get node detail from a sampling of nodes
+      echo ""
+      echo "Collecting node detail from $node_name"
+      kubectl describe node $node_name
+      let "nodedetailcounter+=1"
+    else
+      break
+    fi
+  done
 
 # Check for pods not running in namespace
 echo ""
@@ -100,7 +122,7 @@ echo "*****************************************************"
 echo ""
 
 # Get all api-resources in namespace
-for i in $(kubectl api-resources --verbs=list -o name | grep -v "events.events.k8s.io" | grep -v "events" | sort | uniq); 
+for i in $(kubectl api-resources --verbs=list -o name | grep -v "events.events.k8s.io" | grep -v "events" | sort | uniq);
 do
 echo ""
 echo "Resource:" $i;
