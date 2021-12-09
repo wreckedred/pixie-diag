@@ -46,15 +46,38 @@ helm list -A -n $namespace
 # Check System Info
 echo ""
 echo "*****************************************************"
-echo "Checking System Info"
+echo "Key Information"
 echo "*****************************************************"
 echo ""
 
 nodes=$(kubectl get nodes | awk '{print $1}' | tail -n +2)
 
-# Check Node count
+# check node count
 nodecount=$(kubectl get nodes --selector=kubernetes.io/hostname!=node_host_name | tail -n +2 | wc -l)
 echo "Cluster has "$nodecount" nodes"
+
+if [ $nodecount -gt 100 ]
+  then
+    echo "Node limit is greater than 100"
+fi
+
+# pods not running
+podsnr=$(kubectl get pods -n $namespace -o go-template='{{ range  $item := .items }}{{ range .status.conditions }}{{ if (or (and (eq .type "PodScheduled") (eq .status "False")) (and (eq .type "Ready") (eq .status "False"))) }}{{ $item.metadata.name}} {{ end }}{{ end }}{{ end }}')
+
+# count of pods not running
+podsnrc=$(kubectl get pods -n $namespace -o go-template='{{ range  $item := .items }}{{ range .status.conditions }}{{ if (or (and (eq .type "PodScheduled") (eq .status "False")) (and (eq .type "Ready") (eq .status "False"))) }}{{ $item.metadata.name}} {{ end }}{{ end }}{{ end }}'| grep "^.*$" -c)
+
+if [ $podsnrc -gt 0 ]
+  then
+    echo "There are $podsnrc pods not running!"
+    echo "These pods are not running"
+    echo $podsnr
+fi
+
+echo ""
+echo "*****************************************************"
+echo "Node Information"
+echo "*****************************************************"
 
 for node_name in $nodes
   do
@@ -69,7 +92,7 @@ echo ""
 echo "*****************************************************"
 echo "Checking Allocated resources Available/Consumed"
 echo "*****************************************************"
-echo ""
+
 for node_name in $nodes
   do
     # Get Allocated resources from nodes
@@ -83,7 +106,6 @@ echo ""
 echo "*****************************************************"
 echo "Collecting Node Detail (limited to 3 nodes)"
 echo "*****************************************************"
-echo ""
 
 nodedetailcounter=0
 for node_name in $nodes
@@ -100,26 +122,11 @@ for node_name in $nodes
     fi
   done
 
-# Check for pods not running in namespace
-echo ""
-echo "*****************************************************"
-echo "Checking for pods not running in namespace"
-echo "*****************************************************"
-echo ""
-# pods not running
-podsnr=$(kubectl get pods -n $namespace --field-selector=status.phase!=Running)
-# count of pods not running
-
-podsnrc=$(kubectl get pods -n $namespace --field-selector=status.phase!=Running | tail -n +2 | wc -l)
-echo "There are $podsnrc not running!"
-echo "These pods are not running"
-
 # Get all Kubernetes resources in namespace
 echo ""
 echo "*****************************************************"
 echo "Check all Kubernetes resources in namespace"
 echo "*****************************************************"
-echo ""
 
 # Get all api-resources in namespace
 for i in $(kubectl api-resources --verbs=list -o name | grep -v "events.events.k8s.io" | grep -v "events" | sort | uniq);
@@ -133,7 +140,6 @@ echo ""
 echo "*****************************************************"
 echo "Checking logs"
 echo "*****************************************************"
-echo ""
 
 deployments=$(kubectl get deployments -n $namespace | awk '{print $1}' | tail -n +2)
 
@@ -149,7 +155,6 @@ echo ""
 echo "*****************************************************"
 echo "Checking pod events"
 echo "*****************************************************"
-echo ""
 
 pods=$(kubectl get pods -n $namespace | awk '{print $1}' | tail -n +2)
 
