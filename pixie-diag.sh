@@ -25,7 +25,9 @@ echo ""
 
 # Check for px
 if ! [ -x "$(command -v px)" ]; then
-  echo 'Error: px is not installed.' >&2
+  echo 'Info: px (Pixie CLI) is not installed. Agent status report will be unavailable.' >&2
+  echo 'You can install the Pixie CLI by running:' >&2
+  echo 'bash -c "$(curl -fsSL https://withpixie.ai/install.sh)"' >&2
   else
   echo "Get agent status from Pixie"
   px run px/agent_status
