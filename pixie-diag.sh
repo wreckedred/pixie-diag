@@ -24,15 +24,16 @@ echo "*****************************************************"
 echo ""
 
 # Check for px
-if ! [ -x "$(command -v px)" ]; then
-  echo 'Error: px is not installed.' >&2
-  else
-  echo "Get agent status from Pixie"
-  px run px/agent_status
-  echo ""
-  echo "Collect logs from Pixie"
-  px collect-logs
-fi
+# if ! [ -x "$(command -v px)" ]; then
+#   echo 'Error: px is not installed.' >&2
+#   else
+#   echo "Get agent status from Pixie"
+#   px run px/agent_status
+#   ## To-Do: Skip if cluster is unhealthy
+#   echo ""
+#   echo "Collect logs from Pixie"
+#   px collect-logs
+# fi
 
 # Check HELM releases
 echo ""
@@ -114,6 +115,11 @@ podsnrc=$(kubectl get pods -n $namespace --field-selector=status.phase!=Running 
 echo "There are $podsnrc not running!"
 echo "These pods are not running"
 
+for i in $podsnrc
+do
+  echo $i
+done
+
 # Get all Kubernetes resources in namespace
 echo ""
 echo "*****************************************************"
@@ -135,15 +141,25 @@ echo "Checking logs"
 echo "*****************************************************"
 echo ""
 
-deployments=$(kubectl get deployments -n $namespace | awk '{print $1}' | tail -n +2)
+nr_deployments=$(kubectl get deployments -n $namespace | awk '{print $1}' | tail -n +2)
+olm_deployments=$(kubectl get deployments -n $namespace | awk '{print $1}' | tail -n +2)
+px_deployments=$(kubectl get deployments -n $namespace | awk '{print $1}' | tail -n +2)
 
 for deployment_name in $deployments
   do
-    # Get logs from deployed
-    echo ""
-    echo "Logs from $deployment_name"
-    kubectl logs --tail=50 deployments/$deployment_name -n $namespace
-    done
+    # Get logs from deployments
+    if [[ $deployment_name =~ ^newrelic-bundle-nri-kube-events.*$ ]];
+    then
+
+      echo -e "\nLogs from $deployment_name container: kube-events\n"
+      kubectl logs --tail=50 deployments/$deployment_name -c kube-events -n $namespace
+      echo -e "\nLogs from $deployment_name container: infra-agent\n"
+      kubectl logs --tail=50 deployments/$deployment_name -c infra-agent -n $namespace
+    else
+      echo -e "\nLogs from $deployment_name\n"
+      kubectl logs --tail=50 deployments/$deployment_name -n $namespace
+    fi
+  done
 
 echo ""
 echo "*****************************************************"
