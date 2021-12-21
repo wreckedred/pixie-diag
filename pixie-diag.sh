@@ -152,13 +152,12 @@ for deployment_name in $nr_deployments $olm_deployments $px_deployments
     # Get logs from deployments
     if [[ $deployment_name =~ ^newrelic-bundle-nri-kube-events.*$ ]];
     then
-      echo -e "-------------------------------------------------\n"
+      echo -e "*****************************************************\n"
       echo -e "Logs from $deployment_name container: kube-events\n"
-      echo -e "-------------------------------------------------"
+      echo -e "*****************************************************"
       kubectl logs --tail=50 deployments/$deployment_name -c kube-events -n $namespace
-      echo -e "-------------------------------------------------\n"
-      echo -e "Logs from $deployment_name container: infra-agent\n"
-      echo -e "-------------------------------------------------"
+      echo -e "*****************************************************\n"
+      echo -e "*****************************************************"
       kubectl logs --tail=50 deployments/$deployment_name -c infra-agent -n $namespace
     else
       if [[ $deployment_name == "vizier-operator" ]]; then
@@ -169,9 +168,9 @@ for deployment_name in $nr_deployments $olm_deployments $px_deployments
         ns=$namespace
       fi
 
-      echo -e "-------------------------------------------------\n"
+      echo -e "*****************************************************\n"
       echo -e "Logs from $deployment_name\n"
-      echo -e "-------------------------------------------------"
+      echo -e "*****************************************************"
       kubectl logs --tail=50 deployments/$deployment_name -n $ns
     fi
   done
@@ -194,7 +193,7 @@ for pod_name in $pods
 
 echo ""
 echo "*****************************************************"
-echo "Checking Pixie Operator"
+echo "Checking Pixie Operator Logs"
 echo "*****************************************************"
 echo ""
 # Pixie Operator pod
@@ -206,7 +205,7 @@ kubectl logs --tail=50 $popod -n px-operator
 
 echo ""
 echo "*****************************************************"
-echo "Checking Vizier Operator"
+echo "Checking Vizier Operator Logs"
 echo "*****************************************************"
 echo ""
 # Vizier Operator pod
