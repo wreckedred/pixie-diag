@@ -115,19 +115,18 @@ for node_name in $nodes
     fi
   done
 
-# Get all Kubernetes resources in namespace
-# echo ""
-# echo "*****************************************************"
-# echo "Check all Kubernetes resources in namespace"
-# echo "*****************************************************"
+#Get all Kubernetes resources in namespace
 
-# # Get all api-resources in namespace
-# for i in $(kubectl api-resources --verbs=list -o name | grep -v "events.events.k8s.io" | grep -v "events" | sort | uniq);
-# do
-# echo ""
-# echo "Resource:" $i;
-# kubectl -n $namespace get --ignore-not-found ${i};
-# done
+echo -e "\n*****************************************************\n"
+echo -e "Check all Kubernetes resources in namespace\n"
+echo -e "*****************************************************\n"
+
+# Get all api-resources in namespace
+for i in $(kubectl api-resources --verbs=list -o name | grep -v "events.events.k8s.io" | grep -v "events" | sort | uniq);
+do
+echo -e "\nResource:" $i;
+kubectl -n $namespace get --ignore-not-found ${i};
+done
 
 nr_deployments=$(kubectl get deployments -n $namespace | awk '{print $1}' | tail -n +2)
 olm_deployments=$(kubectl get deployments -n olm | awk '{print $1}' | tail -n +2)
