@@ -66,16 +66,16 @@ echo "Pixie requires nodes with 8 Gb of memory or more, got ${MEMORY}."
 fi
 
 # pods not running
-podsnr=$(kubectl get pods -n newrelic | grep -v Running | awk '{print $1}')
+podsnr=$(kubectl get pods -n newrelic | grep -v Running | tail -n +2 | awk '{print $1}')
 
 # count of pods not running
-podsnrc=$(echo $podsnr | wc -l)
+podsnrc=$(printf '%s\n' $podsnr | wc -l)
 
 if [ $podsnrc -gt 0 ]
   then
     echo "There are $podsnrc pods not running!"
     echo "These pods are not running"
-    echo $podsnr
+    printf '%s\n' $podsnr
 fi
 
 echo -e "\n*****************************************************\n"
