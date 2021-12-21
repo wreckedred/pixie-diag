@@ -158,6 +158,7 @@ for deployment_name in $nr_deployments $olm_deployments $px_deployments
       echo -e "*****************************************************"
       kubectl logs --tail=50 deployments/$deployment_name -c kube-events -n $namespace
       echo -e "*****************************************************\n"
+      echo -e "Logs from $deployment_name container: infra-agent\n"
       echo -e "*****************************************************"
       kubectl logs --tail=50 deployments/$deployment_name -c infra-agent -n $namespace
     else
