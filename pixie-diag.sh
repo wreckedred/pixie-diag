@@ -175,12 +175,10 @@ for pod_name in $pods
     kubectl get events --all-namespaces --sort-by='.lastTimestamp'  | grep -i $pod_name
     done
 
+gzip -9 -c pixie_diag_$timestamp.log > pixie_diag_$timestamp.log.gzip
 
 echo -e "\n*****************************************************\n"
-
-
-echo -e "File created = pixie_diag_<date>.log\n"
-echo -e "File created = pixie_logs_<date>.zip\n"
-
+echo -e "File created = pixie_diag_<timestamp>.log\n"
+echo -e "File created = pixie_diag_<timestamp>.log.gz\n"
 echo -e "*****************************************************\n"
 echo "End pixie-diag"
