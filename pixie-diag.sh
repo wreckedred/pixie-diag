@@ -58,6 +58,13 @@ if [ $nodecount -gt 100 ]
     echo "Node limit is greater than 100"
 fi
 
+# check node memory capacity
+MEMORY=$(kubectl get nodes -o jsonpath='{.items[0].status.capacity.memory}' | sed 's/Ki$//')
+echo "MEMORY=$MEMORY"
+if [[ "$MEMORY" -lt 7950912 ]]; then
+echo "Pixie requires nodes with 8 Gb of memory or more, got ${MEMORY}."
+fi
+
 # pods not running
 podsnr=$(kubectl get pods -n newrelic | grep -v Running | awk '{print $1}')
 
