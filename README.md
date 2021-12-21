@@ -1,21 +1,24 @@
 # pixie-diag
 
-A simple bash script to check the health of a Pixie enabled cluster. 
+A simple bash script to check the health of a Pixie-enabled cluster.
 
-The script runs standard Kubernetes commands in the namespace that Pixie is installed and creates a file.
+The script runs standard Kubernetes commands in the namespace that Pixie is installed in and creates an output file.
 
 # Usage
 
-From instance with access to cluster
-
+From instance with access to cluster:
+```
 chmod +x pixie-diag.sh
 
-./pixie-diag.sh mynamespace
+usage: pixie-diag.sh <namespace>
+
+./pixie-diag.sh newrelic
+```
 
 # Output
 
-pixie-diag.sh outputs to terminal and creates two files.
+pixie-diag.sh outputs to terminal and creates two files:
 
-pixie_diag_date.log <-- stout to file
+- pixie_diag_<date>.log <-- stout to file
 
-pixie_logs_date.zip <-- logs to zip
+- pixie_logs_<date>.zip <-- logs to zip
