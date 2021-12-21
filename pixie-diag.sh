@@ -59,10 +59,10 @@ if [ $nodecount -gt 100 ]
 fi
 
 # pods not running
-podsnr=$(kubectl get pods -n $namespace -o go-template='{{ range  $item := .items }}{{ range .status.conditions }}{{ if (or (and (eq .type "PodScheduled") (eq .status "False")) (and (eq .type "Ready") (eq .status "False"))) }}{{ $item.metadata.name}} {{ end }}{{ end }}{{ end }}')
+podsnr=$(kubectl get pods -n newrelic | grep -v Running | awk '{print $1}')
 
 # count of pods not running
-podsnrc=$(kubectl get pods -n $namespace -o go-template='{{ range  $item := .items }}{{ range .status.conditions }}{{ if (or (and (eq .type "PodScheduled") (eq .status "False")) (and (eq .type "Ready") (eq .status "False"))) }}{{ $item.metadata.name}} {{ end }}{{ end }}{{ end }}'| grep "^.*$" -c)
+podsnrc=$(echo $podsnr | wc -l)
 
 if [ $podsnrc -gt 0 ]
   then
