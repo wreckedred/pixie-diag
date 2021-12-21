@@ -29,11 +29,12 @@ if ! [ -x "$(command -v px)" ]; then
 else
   echo "Get agent status from Pixie"
   px run px/agent_status
-  ## To-Do: Skip if cluster is unhealthy
-  if [ $? -eq 0 ]
+  # Skip if unable to get agent status
+  if [ $? -eq 0 ]; then
     echo ""
     echo "Collect logs from Pixie"
     px collect-logs
+  fi
 fi
 
 # Check HELM releases
