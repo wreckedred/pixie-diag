@@ -24,16 +24,17 @@ echo "*****************************************************"
 echo ""
 
 # Check for px
-# if ! [ -x "$(command -v px)" ]; then
-#   echo 'Error: px is not installed.' >&2
-#   else
-#   echo "Get agent status from Pixie"
-#   px run px/agent_status
-#   ## To-Do: Skip if cluster is unhealthy
-#   echo ""
-#   echo "Collect logs from Pixie"
-#   px collect-logs
-# fi
+if ! [ -x "$(command -v px)" ]; then
+  echo 'Error: px is not installed.' >&2
+else
+  echo "Get agent status from Pixie"
+  px run px/agent_status
+  ## To-Do: Skip if cluster is unhealthy
+  if [ $? -eq 0 ]
+    echo ""
+    echo "Collect logs from Pixie"
+    px collect-logs
+fi
 
 # Check HELM releases
 echo ""
@@ -142,22 +143,35 @@ echo "*****************************************************"
 echo ""
 
 nr_deployments=$(kubectl get deployments -n $namespace | awk '{print $1}' | tail -n +2)
-olm_deployments=$(kubectl get deployments -n $namespace | awk '{print $1}' | tail -n +2)
-px_deployments=$(kubectl get deployments -n $namespace | awk '{print $1}' | tail -n +2)
+olm_deployments=$(kubectl get deployments -n olm | awk '{print $1}' | tail -n +2)
+px_deployments=$(kubectl get deployments -n px-operator | awk '{print $1}' | tail -n +2)
 
-for deployment_name in $deployments
+for deployment_name in $nr_deployments $olm_deployments $px_deployments
   do
     # Get logs from deployments
     if [[ $deployment_name =~ ^newrelic-bundle-nri-kube-events.*$ ]];
     then
-
-      echo -e "\nLogs from $deployment_name container: kube-events\n"
+      echo -e "-------------------------------------------------\n"
+      echo -e "Logs from $deployment_name container: kube-events\n"
+      echo -e "-------------------------------------------------"
       kubectl logs --tail=50 deployments/$deployment_name -c kube-events -n $namespace
-      echo -e "\nLogs from $deployment_name container: infra-agent\n"
+      echo -e "-------------------------------------------------\n"
+      echo -e "Logs from $deployment_name container: infra-agent\n"
+      echo -e "-------------------------------------------------"
       kubectl logs --tail=50 deployments/$deployment_name -c infra-agent -n $namespace
     else
-      echo -e "\nLogs from $deployment_name\n"
-      kubectl logs --tail=50 deployments/$deployment_name -n $namespace
+      if [[ $deployment_name == "vizier-operator" ]]; then
+        ns="px-operator"
+      elif [[ $deployment_name == "catalog-operator" || $deployment_name == "olm-operator" ]]; then
+        ns="olm"
+      else
+        ns=$namespace
+      fi
+
+      echo -e "-------------------------------------------------\n"
+      echo -e "Logs from $deployment_name\n"
+      echo -e "-------------------------------------------------"
+      kubectl logs --tail=50 deployments/$deployment_name -n $ns
     fi
   done
 
