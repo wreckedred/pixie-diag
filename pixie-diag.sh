@@ -17,38 +17,35 @@ namespace=$1
 # Create a log file
 exec > >(tee -a "$PWD/pixie_diag_$timestamp.log") 2>&1
 
-echo ""
-echo "*****************************************************"
-echo "Checking agent status"
-echo "*****************************************************"
-echo ""
+echo -e "\n*****************************************************\n"
+echo -e "Checking agent status\n"
+echo -e "*****************************************************\n"
 
 # Check for px
 if ! [ -x "$(command -v px)" ]; then
   echo 'Error: px is not installed.' >&2
-  else
+else
   echo "Get agent status from Pixie"
   px run px/agent_status
-  echo ""
-  echo "Collect logs from Pixie"
-  px collect-logs
+  # Skip if unable to get agent status
+  if [ $? -eq 0 ]; then
+    echo ""
+    echo "Collect logs from Pixie"
+    px collect-logs
+  fi
 fi
 
 # Check HELM releases
-echo ""
-echo "*****************************************************"
-echo "Checking HELM releases"
-echo "*****************************************************"
-echo ""
+echo -e "\n*****************************************************\n"
+echo -e "Checking HELM releases\n"
+echo -e "*****************************************************\n"
 
 helm list -A -n $namespace
 
 # Check System Info
-echo ""
-echo "*****************************************************"
-echo "Key Information"
-echo "*****************************************************"
-echo ""
+echo -e "\n*****************************************************\n"
+echo -e "Key Information\n"
+echo -e "*****************************************************\n"
 
 nodes=$(kubectl get nodes | awk '{print $1}' | tail -n +2)
 
@@ -74,10 +71,9 @@ if [ $podsnrc -gt 0 ]
     echo $podsnr
 fi
 
-echo ""
-echo "*****************************************************"
-echo "Node Information"
-echo "*****************************************************"
+echo -e "\n*****************************************************\n"
+echo -e "Node Information\n"
+echo -e "*****************************************************\n"
 
 for node_name in $nodes
   do
@@ -88,10 +84,9 @@ for node_name in $nodes
     done
 
 # Check Allocated resources Available/Consumed
-echo ""
-echo "*****************************************************"
-echo "Checking Allocated resources Available/Consumed"
-echo "*****************************************************"
+echo -e "\n*****************************************************\n"
+echo -e "Checking Allocated resources Available/Consumed\n"
+echo -e "*****************************************************\n"
 
 for node_name in $nodes
   do
@@ -102,10 +97,9 @@ for node_name in $nodes
   done
 
 # Get kubectl describe node output for 3 nodes
-echo ""
-echo "*****************************************************"
-echo "Collecting Node Detail (limited to 3 nodes)"
-echo "*****************************************************"
+echo -e "\n*****************************************************\n"
+echo -e "Collecting Node Detail (limited to 3 nodes)\n"
+echo -e "*****************************************************\n"
 
 nodedetailcounter=0
 for node_name in $nodes
@@ -113,8 +107,7 @@ for node_name in $nodes
     if [ $nodedetailcounter -lt 3 ]
     then
       # Get node detail from a sampling of nodes
-      echo ""
-      echo "Collecting node detail from $node_name"
+      echo -e "\nCollecting node detail from $node_name"
       kubectl describe node $node_name
       let "nodedetailcounter+=1"
     else
@@ -122,39 +115,55 @@ for node_name in $nodes
     fi
   done
 
-# Get all Kubernetes resources in namespace
-echo ""
-echo "*****************************************************"
-echo "Check all Kubernetes resources in namespace"
-echo "*****************************************************"
+#Get all Kubernetes resources in namespace
+
+echo -e "\n*****************************************************\n"
+echo -e "Check all Kubernetes resources in namespace\n"
+echo -e "*****************************************************\n"
 
 # Get all api-resources in namespace
 for i in $(kubectl api-resources --verbs=list -o name | grep -v "events.events.k8s.io" | grep -v "events" | sort | uniq);
 do
-echo ""
-echo "Resource:" $i;
+echo -e "\nResource:" $i;
 kubectl -n $namespace get --ignore-not-found ${i};
 done
 
-echo ""
-echo "*****************************************************"
-echo "Checking logs"
-echo "*****************************************************"
+nr_deployments=$(kubectl get deployments -n $namespace | awk '{print $1}' | tail -n +2)
+olm_deployments=$(kubectl get deployments -n olm | awk '{print $1}' | tail -n +2)
+px_deployments=$(kubectl get deployments -n px-operator | awk '{print $1}' | tail -n +2)
 
-deployments=$(kubectl get deployments -n $namespace | awk '{print $1}' | tail -n +2)
-
-for deployment_name in $deployments
+for deployment_name in $nr_deployments $olm_deployments $px_deployments
   do
-    # Get logs from deployed
-    echo ""
-    echo "Logs from $deployment_name"
-    kubectl logs --tail=50 deployments/$deployment_name -n $namespace
-    done
+    # Get logs from deployments
+    if [[ $deployment_name =~ ^newrelic-bundle-nri-kube-events.*$ ]];
+    then
+      echo -e "\n*****************************************************\n"
+      echo -e "Logs from $deployment_name container: kube-events\n"
+      echo -e "*****************************************************\n"
+      kubectl logs --tail=50 deployments/$deployment_name -c kube-events -n $namespace
+      echo -e "\n*****************************************************\n"
+      echo -e "Logs from $deployment_name container: infra-agent\n"
+      echo -e "*****************************************************\n"
+      kubectl logs --tail=50 deployments/$deployment_name -c infra-agent -n $namespace
+    else
+      if [[ $deployment_name == "vizier-operator" ]]; then
+        ns="px-operator"
+      elif [[ $deployment_name == "catalog-operator" || $deployment_name == "olm-operator" ]]; then
+        ns="olm"
+      else
+        ns=$namespace
+      fi
 
-echo ""
-echo "*****************************************************"
-echo "Checking pod events"
-echo "*****************************************************"
+      echo -e "\n*****************************************************\n"
+      echo -e "Logs from $deployment_name\n"
+      echo -e "*****************************************************\n"
+      kubectl logs --tail=50 deployments/$deployment_name -n $ns
+    fi
+  done
+
+echo -e "\n*****************************************************\n"
+echo -e "Checking pod events\n"
+echo -e "*****************************************************\n"
 
 pods=$(kubectl get pods -n $namespace | awk '{print $1}' | tail -n +2)
 
@@ -166,39 +175,10 @@ for pod_name in $pods
     kubectl get events --all-namespaces --sort-by='.lastTimestamp'  | grep -i $pod_name
     done
 
-echo ""
-echo "*****************************************************"
-echo "Checking Pixie Operator"
-echo "*****************************************************"
-echo ""
-# Pixie Operator pod
-popod=$(kubectl get pods -n px-operator -o=name |  grep pixie-operator)
-echo "Logs from $popod"
+gzip -9 -c pixie_diag_$timestamp.log > pixie_diag_$timestamp.log.gzip
 
-# Get logs from operator pod
-kubectl logs --tail=50 $popod -n px-operator
-
-echo ""
-echo "*****************************************************"
-echo "Checking Vizier Operator"
-echo "*****************************************************"
-echo ""
-# Vizier Operator pod
-vopod=$(kubectl get pods -n px-operator -o=name |  grep vizier-operator)
-echo "Logs from $vopod"
-
-# Get logs from Vizier pod
-kubectl logs --tail=50 $vopod -n px-operator
-
-echo ""
-echo "*****************************************************"
-
-
-echo "File created = pixie_diag_<date>.log"
-echo "File created = pixie_logs_<date>.zip"
-
-echo ""
-echo "*****************************************************"
-echo ""
+echo -e "\n*****************************************************\n"
+echo -e "File created = pixie_diag_<timestamp>.log\n"
+echo -e "File created = pixie_diag_<timestamp>.log.gz\n"
+echo -e "*****************************************************\n"
 echo "End pixie-diag"
-echo ""
