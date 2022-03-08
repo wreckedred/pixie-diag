@@ -131,8 +131,19 @@ echo -e "*****************************************************\n"
 # Get all api-resources in namespace
 for i in $(kubectl api-resources --verbs=list -o name | grep -v "events.events.k8s.io" | grep -v "events" | sort | uniq);
 do
-echo -e "\nResource:" $i;
-kubectl -n $namespace get --ignore-not-found ${i};
+  echo -e "\nResource:" $i;
+  # An array of important namespace resources
+  array=("configmaps" "rolebindings.rbac.authorization.k8s.io" "endpoints" "secrets" "networkpolicies" "serviceaccounts" "pods" "endpointslices" "deployments.apps" "horizontalpodautoscalers" "ingresses" "networkpolicies")
+  str=$'resources\n=================='
+  if [[ "${array[*]}" =~ "$i" ]]; then
+    echo -e "\n px-operator $str"
+    kubectl -n px-operator get --ignore-not-found ${i};
+    echo -e "\n $namespace $str"
+    kubectl -n $namespace get --ignore-not-found ${i};
+  else 
+    echo -e "\n $namespace $str"
+    kubectl -n $namespace get --ignore-not-found ${i};
+  fi
 done
 
 nr_deployments=$(kubectl get deployments -n $namespace | awk '{print $1}' | tail -n +2)
