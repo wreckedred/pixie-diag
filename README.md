@@ -6,19 +6,21 @@ The script runs standard Kubernetes commands in the namespace that Pixie is inst
 
 # Usage
 
-From instance with access to cluster:
 ```
+pixie-diag.sh <namespace>
+```
+
+Run from instance with access to cluster. The namespace will typically be either `px` or `newrelic`, depending on your installation.
+```
+wget https://raw.githubusercontent.com/wreckedred/pixie-diag/main/pixie-diag.sh
 chmod +x pixie-diag.sh
-
-usage: pixie-diag.sh <namespace>
-
 ./pixie-diag.sh newrelic
 ```
 
 # Output
 
-pixie-diag.sh outputs to terminal and creates two files:
+`pixie-diag.sh` outputs to terminal and creates two files:
 
-- pixie_diag_<date>.log <-- stout to file
+- pixie_diag_<date>.log <-- stdout to file
 
-- pixie_logs_<date>.zip <-- logs to zip
+- pixie_logs_<date>.gzip <-- logs to gzip
