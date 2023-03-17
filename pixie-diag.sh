@@ -160,9 +160,9 @@ for deployment_name in $nr_deployments $olm_deployments $px_deployments
       echo -e "*****************************************************\n"
       kubectl logs --tail=50 deployments/$deployment_name -c kube-events -n $namespace
       echo -e "\n*****************************************************\n"
-      echo -e "Logs from $deployment_name container: infra-agent\n"
+      echo -e "Logs from $deployment_name container: forwarder\n"
       echo -e "*****************************************************\n"
-      kubectl logs --tail=50 deployments/$deployment_name -c infra-agent -n $namespace
+      kubectl logs --tail=50 deployments/$deployment_name -c forwarder -n $namespace
     else
       if [[ $deployment_name == "vizier-operator" ]]; then
         ns="px-operator"
@@ -197,6 +197,6 @@ gzip -9 -c pixie_diag_$timestamp.log > pixie_diag_$timestamp.log.gzip
 
 echo -e "\n*****************************************************\n"
 echo -e "File created = pixie_diag_<timestamp>.log\n"
-echo -e "File created = pixie_diag_<timestamp>.log.gz\n"
+echo -e "File created = pixie_diag_<timestamp>.log.gzip\n"
 echo -e "*****************************************************\n"
 echo "End pixie-diag"
